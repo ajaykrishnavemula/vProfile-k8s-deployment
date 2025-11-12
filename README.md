@@ -141,7 +141,6 @@ kubectl get all -n ingress-nginx
   - **Secrets** and **ConfigMaps**
   - **Ingress Rules** for routing
 
-> 🖼️ *(Reference screenshots or diagrams may be included here to visualize manifest file organization.)*
 
 ```bash
 git clone https://github.com/<your-org>/vprofile-k8s.git
@@ -218,3 +217,6 @@ This guide follows best practices for:
 - Persistent storage
 - Secret management
 - External accessibility
+
+
+**Thank you for exploring this project! Feel free to reach out or contribute. 🌟**
