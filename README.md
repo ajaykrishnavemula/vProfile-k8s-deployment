@@ -4,6 +4,9 @@
 scalable, production-grade **Kubernetes cluster** managed via **kOps and AWS EC2**, using
 **NGINX Ingress** for external access.
 
+- Kubernetes Logical Architecture
+![Kubernetes Logical Architecture](./images/Kubernetes-Cluster.png)
+
 ---
 
 ## 🧩 **Architecture Summary**
@@ -27,19 +30,21 @@ scalable, production-grade **Kubernetes cluster** managed via **kOps and AWS EC2
 
 
 ## ■ Diagrams
-- Kubernetes Logical Architecture
-- Network & Traffic Flow
+- vProfile Application Architecture
+![vProfile Application Architecture](./images/vProfile-architecture.png)
+
 ---
 
 ## 🧭 **Step-by-Step Workflow**
 
----
 
 ### 🖥️ **1️⃣ Launch AWS EC2 Instance (Admin / Jump Box)**
 - Start a clean **Amazon Linux 2** or **Ubuntu EC2** instance in your desired region.  
 - Use it as your **Admin Node** for cluster management.  
 - 🔐 **SSH** into the instance securely using your private key.
-`ssh -i <key>.pem ec2-user@<instance-public-ip>`
+```bash
+ssh -i <key>.pem ec2-user@<instance-public-ip>
+```
 
 ### ⚙️ **2️⃣ Install Required Tools**
 Set up the essential Kubernetes and AWS management tools:
@@ -53,7 +58,7 @@ Set up the essential Kubernetes and AWS management tools:
 - 🧩 **kubectl** – CLI tool to manage your Kubernetes cluster.  
 - 🛠️ **kOps** – Kubernetes Operations tool to create and manage clusters on AWS.
 
-`
+```bash
 sudo apt update
 sudo apt install -y python3-pip
 pip3 install awscli --upgrade --user
@@ -67,7 +72,7 @@ sudo mv kubectl /usr/local/bin/
 curl -LO https://github.com/kubernetes/kops/releases/download/v1.25.3/kops-linux-amd64
 chmod +x kops-linux-amd64
 sudo mv kops-linux-amd64 /usr/local/bin/kops
-`
+```
 
 
 ### ☸️ **3️⃣ Use kOps to Create Your Kubernetes Cluster**
@@ -82,8 +87,8 @@ sudo mv kops-linux-amd64 /usr/local/bin/kops
   - **1 Master Node**
   - **2 Worker Nodes**  
 - 🌿 kOps automatically configures networking, subnets, and IAM roles.
-
-`kops create cluster \
+```bash
+kops create cluster \
   --name=kubevpro.hhkinfoteck.xyz \
   --state=s3://kopsstate956 \
   --zones=us-east-1a,us-east-1b \
@@ -101,13 +106,15 @@ kops update cluster \
   --yes --admin
 
 kubectl get nodes
-`
+```
 
 
 ### 🌐 **4️⃣ Set Up DNS for Cluster Access**
 - 🔍 Retrieve the **API / Public Endpoint** of your cluster from **Route53** or the **AWS Console**.  
 - 🌎 Point your **domain name** (e.g., `vprofile.hhkinfoteck.xyz`) to the **AWS ALB endpoint** using your **GoDaddy DNS records**.  
 - 🧭 This enables smooth external access to your Kubernetes-hosted application through a custom domain.
+
+![DNS routing](./images/DNS-routing.png)
 
 
 ### 🧱 **5️⃣ Install NGINX Ingress Controller**
@@ -117,10 +124,11 @@ kubectl get nodes
 
 > 🔁 The Ingress Controller integrates with AWS ALB to provide **secure**, **load-balanced**, and **scalable** HTTP/HTTPS traffic routing.
 
-`kubectl create namespace ingress-nginx
+```bash
+kubectl create namespace ingress-nginx
 kubectl apply -n ingress-nginx -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.1.3/deploy/static/provider/aws/deploy.yaml
 kubectl get all -n ingress-nginx
-`
+```
 
 
 ### 💾 **6️⃣ Clone vProfile Source and Prepare Manifests**
@@ -135,12 +143,12 @@ kubectl get all -n ingress-nginx
 
 > 🖼️ *(Reference screenshots or diagrams may be included here to visualize manifest file organization.)*
 
-
-`git clone https://github.com/<your-org>/vprofile-k8s.git
+```bash
+git clone https://github.com/<your-org>/vprofile-k8s.git
 cd vprofile-k8s/kubedefs
-`
+```
 
-`
+```bash
 appdeploy.yaml
 appservice.yaml
 dbdeploy.yaml
@@ -152,7 +160,7 @@ rmqdeploy.yaml
 rmqservice.yaml
 secret.yaml
 appingress.yaml
-`
+```
 
 ### 🚀 **7️⃣ Apply Kubernetes Manifests (Deploy the Application)**
 - ⚡ Deploy all **vProfile components** (Tomcat, MySQL, RabbitMQ, Memcached, Nginx) by applying the manifest files.  
@@ -160,11 +168,12 @@ appingress.yaml
 - 🔍 Verify deployment status to ensure every component is running and healthy.
 
 > 🧠 Tip: Proper namespace and resource labeling help with monitoring and debugging.
-`kubectl create -f .
+```bash
+kubectl create -f .
 kubectl get all
 kubectl get pvc
 kubectl get secret
-`
+```
 
 
 ### 🌍 **8️⃣ Access the Application via DNS and Ingress**
@@ -172,10 +181,10 @@ kubectl get secret
 - 🔁 The **Ingress resource** routes requests from the ALB to the **Tomcat service**, which serves the vProfile web frontend.  
 - 🔎 Retrieve the **ALB hostname** and map it to your domain in **GoDaddy DNS records** for clean URL access.
 
-`
+```bash
 kubectl get ingress
 http://<your-domain>/welcome
-`
+```
 
 ---
 ## ■ Kubernetes Manifests Structure
@@ -188,7 +197,7 @@ http://<your-domain>/welcome
 | **Ingress YAML**      | External routing (NGINX + ALB)     |
 ---
 ## ■ Troubleshooting & Validation
-```
+```bash
 kubectl get nodes
 kubectl get all
 kubectl get pvc
